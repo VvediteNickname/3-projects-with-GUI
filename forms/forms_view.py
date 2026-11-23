@@ -174,7 +174,7 @@ class StatisticsDialog(QDialog):
         ]
 
         if box_data:
-            ax3.boxplot(box_data, labels=box_labels)
+            ax3.boxplot(box_data, tick_labels=box_labels)
         else:
             ax3.text(0.5, 0.5, "Нет данных", ha="center")
 
