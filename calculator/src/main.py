@@ -1,20 +1,24 @@
-import tkinter as tk
+import sys
+import traceback
+
+from PySide6.QtWidgets import QApplication
 
 from view import CalculatorView
 from controller import CalculatorController
 
 
+def excepthook(exc_type, exc_value, exc_tb):
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+
+
 def main():
-    # Небольшая настройка чёткости: Tk на Linux берёт scaling из системы,
-    # но если картинка мыльная/крупная — подкрути 1.0..1.5 под свой монитор.
-    root = tk.Tk()
-    root.tk.call("tk", "scaling", 1.333)   # ≈96 DPI; попробуй 1.0 или 1.5
-    root.destroy()
+    sys.excepthook = excepthook          # видеть исключения в слотах
 
+    app = QApplication(sys.argv)
     view = CalculatorView()
-    controller = CalculatorController(view)
-
-    view.mainloop()
+    controller = CalculatorController(view)   # ДО show()
+    view.show()
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
