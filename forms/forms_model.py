@@ -70,6 +70,15 @@ class FormsModel:
                 return
 
         raise ValueError("Пациент не найден")
+        
+    def delete_patient(self, patient_id):
+        for index, patient in enumerate(self.patients):
+            if patient["id"] == patient_id:
+                del self.patients[index]                      # убрать из списка
+                file_path = self.data_folder / f"{patient_id}.json"
+                file_path.unlink(missing_ok=True)             # удалить JSON-файл
+                return
+        raise ValueError("Пациент не найден")
 
     def save_patient(self, patient):
         file_path = self.data_folder / f"{patient['id']}.json"

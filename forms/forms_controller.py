@@ -9,7 +9,8 @@ class FormsController:
         self.view.add_button.clicked.connect(self.add_patient)
         self.view.edit_button.clicked.connect(self.edit_patient)
         self.view.stats_button.clicked.connect(self.show_statistics)
-
+        self.view.delete_button.clicked.connect(self.delete_patient)   
+        
         # Показываем загруженных пациентов
         self.update_table()
 
@@ -38,13 +39,11 @@ class FormsController:
             self.view.show_error("Сначала выберите пациента в таблице")
             return
 
-        patient = next(
-            (
-                p for p in self.model.get_patients()
-                if p["id"] == patient_id
-            ),
-            None
-        )
+        patient = None
+        for p in self.model.get_patients():
+            if p["id"] == patient_id:
+                patient = p
+                break
 
         if patient is None:
             self.view.show_error("Пациент не найден")
@@ -60,6 +59,22 @@ class FormsController:
             self.update_table()
             self.view.show_info("Данные пациента обновлены")
 
+        except (ValueError, OSError) as error:
+            self.view.show_error(str(error))
+
+    def delete_patient(self):
+        patient_id = self.view.get_selected_patient_id()
+        if patient_id is None:
+            self.view.show_error("Сначала выберите пациента в таблице")
+            return
+
+        if not self.view.confirm_delete():    # «Отмена»/«Нет» → тихо выходим
+            return
+
+        try:
+            self.model.delete_patient(patient_id)
+            self.update_table()
+            self.view.show_info("Пациент удалён")
         except (ValueError, OSError) as error:
             self.view.show_error(str(error))
 

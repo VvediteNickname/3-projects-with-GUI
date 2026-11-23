@@ -253,10 +253,12 @@ class FormsView(QMainWindow):
 
         self.add_button = QPushButton("Добавить пациента")
         self.edit_button = QPushButton("Редактировать")
+        self.delete_button = QPushButton("Удалить")
         self.stats_button = QPushButton("Статистика")
 
         buttons_layout.addWidget(self.add_button)
         buttons_layout.addWidget(self.edit_button)
+        buttons_layout.addWidget(self.delete_button)
         buttons_layout.addWidget(self.stats_button)
 
         layout.addLayout(buttons_layout)
@@ -323,6 +325,15 @@ class FormsView(QMainWindow):
     def show_statistics(self, patients):
         dialog = StatisticsDialog(patients, self)
         dialog.exec()
+
+    def confirm_delete(self):
+        answer = QMessageBox.question(
+            self, "Подтверждение", "Удалить выбранного пациента?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No      # по умолчанию «Нет» — безопасно
+        )
+        return answer == QMessageBox.StandardButton.Yes
+
 
     def show_error(self, message):
         QMessageBox.critical(self, "Ошибка", message)
