@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QFont, QIcon, QPixmap
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QGridLayout,
     QLineEdit, QLabel, QPushButton,
@@ -11,13 +11,13 @@ class CalculatorView(QMainWindow):
 
     # ---------- палитра ----------
     BG         = "#84b66a"
-    BTN_BG     = "#5B7820"
+    BTN_BG     = "#53770C"
     BTN_HOVER  = "#216957"
     BTN_PRESS  = "#889828"
     BTN_FG     = "#ffffff"
-    ENTRY_BG   = "#ffffff"
-    ENTRY_FG   = "#000000"
-    ERROR_FG   = "#fb2b51"
+    ENTRY_BG   = "#dfecb6"
+    ENTRY_FG   = "#2C0017"
+    ERROR_FG   = "#530721"
 
     BTN_SIZE = 70
 
@@ -25,14 +25,17 @@ class CalculatorView(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Calculator")
-        self.setMinimumSize(420, 620)
+        self.setMinimumSize(420, 580)
 
         # Колбэки, которые установит контроллер
         self.callbacks = {}
 
         # Центральный виджет
         central = QWidget(self)
-        central.setStyleSheet(f"background-color: {self.BG};")
+        central.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                        stop:0 #84b66a, stop:1 #2A9379);
+        """)
         self.setCentralWidget(central)
 
         root = QVBoxLayout(central)
@@ -60,14 +63,14 @@ class CalculatorView(QMainWindow):
         # Метка ошибок
         self.status_label = QLabel("")
         self.status_label.setStyleSheet(
-            f"color: {self.ERROR_FG}; font-size: 12px; background: transparent;"
+            f"color: {self.ERROR_FG}; font-size: 25px; background: transparent;"
         )
         self.status_label.setAlignment(Qt.AlignLeft)
         root.addWidget(self.status_label)
 
         # Сетка кнопок
         grid = QGridLayout()
-        grid.setSpacing(10)
+        grid.setSpacing(6)
         root.addLayout(grid, stretch=1)
 
         layout = [

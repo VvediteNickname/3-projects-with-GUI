@@ -71,7 +71,11 @@ class CalculatorController:
 
     def on_equals(self):
         self.view.clear_error()
-
+        if self.current == "88005553535":
+            self.view.show_error("""Лучше позвонить, 
+                чем у кого-то занимать!""")
+            return
+    
         if self.operator is None:
             # Нечего считать — просто фиксируем текущее
             self.view.set_display(self.current)

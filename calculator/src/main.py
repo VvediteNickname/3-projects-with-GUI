@@ -12,7 +12,7 @@ def excepthook(exc_type, exc_value, exc_tb):
 
 
 def main():
-    sys.excepthook = excepthook          # видеть исключения в слотах
+    sys.excepthook = excepthook 
 
     app = QApplication(sys.argv)
     view = CalculatorView()
