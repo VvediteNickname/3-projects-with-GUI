@@ -1,20 +1,6 @@
 import os
-
-from sequences import FastaReader, FastqReader
+from sequences import FastqReader
 from fastqc_plots import build_all_plots
-
-
-FASTA_EXTS = (".fasta", ".fa", ".fna")
-FASTQ_EXTS = (".fastq", ".fq")
-
-
-def _pick_reader(path):
-    ext = os.path.splitext(path)[1].lower()
-    if ext in FASTA_EXTS:
-        return FastaReader(path)
-    if ext in FASTQ_EXTS:
-        return FastqReader(path)
-    raise ValueError(f"Неизвестный формат файла: {ext}")
 
 
 def run_cli(path):
@@ -22,11 +8,11 @@ def run_cli(path):
         print(f"Ошибка: файл не найден: {path}")
         return
 
-    try:
-        reader = _pick_reader(path)
-    except ValueError as e:
-        print(f"Ошибка: {e}")
+    if not path.lower().endswith((".fastq", ".fq")):
+        print("Ошибка: поддерживаются только FASTQ (*.fastq, *.fq)")
         return
+
+    reader = FastqReader(path)
 
     count = reader.get_sequences_count()
     avg = reader.get_average_length()
