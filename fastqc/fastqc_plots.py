@@ -1,18 +1,9 @@
 import os
 import matplotlib
-matplotlib.use("Agg")           # без GUI-бэкенда, чтобы работало и в CLI, и в GUI
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from sequences import FastaReader, FastqReader
-
-
-def _iter_records(reader):
-    """Единый итератор: для FASTA вернёт (name, dna, None), для FASTQ (name, dna, qual)."""
-    for item in reader.read():
-        if len(item) == 3:
-            yield item[0], item[1], item[2]
-        else:
-            yield item[0], item[1], None
+from sequences import FastqReader
 
 
 def _gc_content(dna):
@@ -23,14 +14,9 @@ def _gc_content(dna):
     return gc / len(dna) * 100
 
 
-# ---------- 1. качество по позициям (у тебя уже есть, оставим совместимость) ----------
-
 def plot_per_base_quality(reader, out_path="plot_per_base_quality.png"):
-    """Среднее качество по позициям. Только FASTQ."""
     positions = {}
-    for _, _, qual in _iter_records(reader):
-        if qual is None:
-            raise ValueError("График качества доступен только для FASTQ")
+    for _, _, qual in reader.read():
         for i, ch in enumerate(qual):
             positions.setdefault(i, []).append(ord(ch) - 33)
 
@@ -51,14 +37,9 @@ def plot_per_base_quality(reader, out_path="plot_per_base_quality.png"):
     return out_path
 
 
-# ---------- 2. распределение среднего качества по прочтениям ----------
-
 def plot_per_sequence_quality(reader, out_path="plot_per_sequence_quality.png"):
-    """Гистограмма среднего качества каждой последовательности. Только FASTQ."""
     means = []
-    for _, _, qual in _iter_records(reader):
-        if qual is None:
-            raise ValueError("График качества доступен только для FASTQ")
+    for _, _, qual in reader.read():
         if not qual:
             continue
         scores = [ord(ch) - 33 for ch in qual]
@@ -78,12 +59,9 @@ def plot_per_sequence_quality(reader, out_path="plot_per_sequence_quality.png"):
     return out_path
 
 
-# ---------- 3. состав оснований по позициям ----------
-
 def plot_per_base_content(reader, out_path="plot_per_base_content.png"):
-    """Доля A/T/G/C по позициям."""
     positions = {}
-    for _, dna, _ in _iter_records(reader):
+    for _, dna, _ in reader.read():
         for i, ch in enumerate(dna.upper()):
             positions.setdefault(i, {"A": 0, "T": 0, "G": 0, "C": 0})
             if ch in positions[i]:
@@ -113,11 +91,8 @@ def plot_per_base_content(reader, out_path="plot_per_base_content.png"):
     return out_path
 
 
-# ---------- 4. распределение GC-content ----------
-
 def plot_gc_distribution(reader, out_path="plot_gc_distribution.png"):
-    """Гистограмма GC-content по последовательностям."""
-    gcs = [_gc_content(dna) for _, dna, _ in _iter_records(reader)]
+    gcs = [_gc_content(dna) for _, dna, _ in reader.read()]
     if not gcs:
         raise ValueError("Нет последовательностей")
 
@@ -132,11 +107,8 @@ def plot_gc_distribution(reader, out_path="plot_gc_distribution.png"):
     return out_path
 
 
-# ---------- 5. распределение длин ----------
-
 def plot_length_distribution(reader, out_path="plot_length_distribution.png"):
-    """Гистограмма длин последовательностей."""
-    lengths = [len(dna) for _, dna, _ in _iter_records(reader)]
+    lengths = [len(dna) for _, dna, _ in reader.read()]
     if not lengths:
         raise ValueError("Нет последовательностей")
 
@@ -151,32 +123,16 @@ def plot_length_distribution(reader, out_path="plot_length_distribution.png"):
     return out_path
 
 
-# ---------- удобная обёртка ----------
-
 def build_all_plots(reader, out_dir="."):
-    """Строит все доступные графики, возвращает список путей.
-
-    Для FASTQ — 5 графиков, для FASTA — 3 (без качества).
-    Ошибки по отдельным графикам не валят остальные.
-    """
     results = []
 
-    # общие для FASTA/FASTQ
-    common = [
-        ("Per base sequence content", plot_per_base_content, "plot_per_base_content.png"),
-        ("Per sequence GC content",   plot_gc_distribution,  "plot_gc_distribution.png"),
-        ("Sequence length distribution", plot_length_distribution, "plot_length_distribution.png"),
-    ]
-
-    # только FASTQ
-    fastq_only = [
+    plots = [
         ("Per base sequence quality", plot_per_base_quality, "plot_per_base_quality.png"),
         ("Per sequence quality scores", plot_per_sequence_quality, "plot_per_sequence_quality.png"),
+        ("Per base sequence content", plot_per_base_content, "plot_per_base_content.png"),
+        ("Per sequence GC content", plot_gc_distribution, "plot_gc_distribution.png"),
+        ("Sequence length distribution", plot_length_distribution, "plot_length_distribution.png"),
     ]
-
-    plots = list(common)
-    if isinstance(reader, FastqReader):
-        plots += fastq_only
 
     for title, func, fname in plots:
         out = os.path.join(out_dir, fname)
